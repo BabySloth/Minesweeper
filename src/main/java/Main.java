@@ -76,7 +76,7 @@ public class Main extends Application {
      */
     private VBox generateInformationSection(){
         SplitPane topHolder = getInformationSplitPane();
-        Label difficultyDisplay = getInformationLabel(difficulty.getStringName());
+        Label difficultyDisplay = getInformationLabel(difficulty.toString());
         timeDisplay = getInformationLabel("0");
         bombsLeftDisplay = getInformationLabel("Bombs left: 0");
         topHolder.getItems().addAll(difficultyDisplay, timeDisplay, bombsLeftDisplay);
@@ -174,7 +174,7 @@ public class Main extends Application {
                         FXCollections.observableArrayList("Easy", "Intermediate", "Expert");
                 ChoiceBox choicesHolder = new ChoiceBox(choices);
                 // Reminds player what mode they are playing on (even though it is on top)
-                choicesHolder.getSelectionModel().select(difficulty.stringName);
+                choicesHolder.getSelectionModel().select(difficulty.toString());
 
                 // Creates a new game based on the choice
                 Button confirm = new Button("Create game");
