@@ -15,7 +15,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import src.main.java.Difficulty;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -613,23 +612,6 @@ public class Main extends Application {
 
         boolean isShown(){
             return isShown;
-        }
-    }
-
-    enum Measurements {
-        windowWidth(500),
-        windowHeight(450),
-        displayHeight(30),
-        tileSide(40);
-
-        private final double value;
-
-        Measurements(double value) {
-            this.value = value;
-        }
-
-        public double value(){
-            return value;
         }
     }
 
