@@ -58,9 +58,11 @@ public class Main extends Application {
 
         // Thread making
         Thread timingThread = new Timing();
-        timingThread.setDaemon(false);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(timingThread, 0, 1, TimeUnit.SECONDS);
+
+        // Allows the game to fully shutdown and remove ScheduledExecutorService
+        primaryStage.setOnCloseRequest(e -> System.exit(0)); // 0 since we do want to close the program
 
         Scene scene = new Scene(mainHolder, Measurements.windowWidth.value(), Measurements.windowHeight.value());
         primaryStage.setScene(scene);
