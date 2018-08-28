@@ -17,7 +17,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Random;
@@ -33,6 +32,7 @@ public class Main extends Application {
     private Difficulty difficulty = Difficulty.EASY;
     private boolean isPregame = true;
     private boolean userBegan = false;
+    private boolean isPaused = false;
     private boolean gameEnded = false;
 
     private Label timeDisplay;
@@ -58,7 +58,7 @@ public class Main extends Application {
 
         // Thread making
         Thread timingThread = new Timing();
-        timingThread.setDaemon(true);
+        timingThread.setDaemon(false);
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(timingThread, 0, 1, TimeUnit.SECONDS);
 
@@ -67,6 +67,11 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Generates the top section of the scene. This tells you the difficulty you are on, amount of seconds you took,
+     * amount of bombs left, changing difficulty, pausing, new game, and help.
+     * @return View
+     */
     private VBox generateInformationSection(){
         SplitPane topHolder = getInformationSplitPane();
         Label difficultyDisplay = getInformationLabel(difficulty.getStringName());
@@ -78,6 +83,7 @@ public class Main extends Application {
         Button changeDifficulty = getInformationButton("Change difficulty");
         changeDifficulty.setOnAction(event -> changeDifficulty());
         Button pause = getInformationButton("Pause");
+        pause.setOnAction(e -> pause(pause));
         Button newGame = getInformationButton("New");
         newGame.setOnAction(event -> newGame(difficulty));
         // Pause and newGame must be located in the middle
@@ -184,6 +190,28 @@ public class Main extends Application {
     }
 
     /**
+     * Pauses and resume the game and prevent user from seeing the board
+     */
+    private void pause(Button self){
+        // Make sure the game is actually being played
+        if(isPregame || gameEnded) return;
+
+        if(isPaused){
+            // Resume the game
+            isPaused = false;
+            gameBoard.setVisible(true);
+            self.setText("Pause");
+
+        }else{
+            // Pause the game
+            isPaused = true;
+            gameBoard.setVisible(false);
+            self.setText("Resume");
+
+        }
+    }
+
+    /**
      * Begins a new game by recreating the gameBoard and updating the information on top to fit a new game.
      */
     private void newGame(Difficulty newDifficulty){
@@ -204,10 +232,11 @@ public class Main extends Application {
         timeDisplay.setText(String.valueOf(secondsPassed));
     }
 
+
     private class Timing extends Thread{
         @Override
         public void run() {
-            if(userBegan && !isPregame && !gameEnded){
+            if(userBegan && !isPregame && !gameEnded && !isPaused){
                 Platform.runLater(() -> {
                     secondsPassed++;
                     timeDisplay.setText(String.valueOf(secondsPassed));
