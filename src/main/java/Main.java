@@ -1,6 +1,7 @@
 package src.main.java;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
@@ -16,9 +17,13 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Credit is to http://minesweeperonline.com/ for the game values (amount of columns, rows, and bombs along with
@@ -27,10 +32,11 @@ import java.util.Random;
 public class Main extends Application {
     private Difficulty difficulty = Difficulty.EASY;
     private boolean isPregame = true;
+    private boolean userBegan = false;
     private boolean gameEnded = false;
 
-    private Label difficultyDisplay;
     private Label timeDisplay;
+    private int secondsPassed;
     private Label bombsLeftDisplay;
 
     private VBox mainHolder;
@@ -50,6 +56,12 @@ public class Main extends Application {
         mainHolder.getChildren().remove(new HBox());
         newGame(difficulty);
 
+        // Thread making
+        Thread timingThread = new Timing();
+        timingThread.setDaemon(true);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(timingThread, 0, 1, TimeUnit.SECONDS);
+
         Scene scene = new Scene(mainHolder, Measurements.windowWidth.value(), Measurements.windowHeight.value());
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -57,8 +69,8 @@ public class Main extends Application {
 
     private VBox generateInformationSection(){
         SplitPane topHolder = getInformationSplitPane();
-        difficultyDisplay = getInformationLabel(difficulty.getStringName());
-        timeDisplay = getInformationLabel("00:00");
+        Label difficultyDisplay = getInformationLabel(difficulty.getStringName());
+        timeDisplay = getInformationLabel("0");
         bombsLeftDisplay = getInformationLabel("Bombs left: 0");
         topHolder.getItems().addAll(difficultyDisplay, timeDisplay, bombsLeftDisplay);
 
@@ -179,20 +191,39 @@ public class Main extends Application {
         removeCurrentGame();
         mainHolder.getChildren().remove(extraHolder);
 
-        // Generates new game
-        difficulty = newDifficulty;
-        generateGameBoard();
-        mainHolder.getChildren().add(gameBoardHolder);
         // Update global variable
         isPregame = true;
         gameEnded = false;
+        secondsPassed = 0;
+        userBegan = false;
+
+        // Generates new game and updates view
+        difficulty = newDifficulty;
+        generateGameBoard();
+        mainHolder.getChildren().add(gameBoardHolder);
+        timeDisplay.setText(String.valueOf(secondsPassed));
+    }
+
+    private class Timing extends Thread{
+        @Override
+        public void run() {
+            if(userBegan && !isPregame && !gameEnded){
+                Platform.runLater(() -> {
+                    secondsPassed++;
+                    timeDisplay.setText(String.valueOf(secondsPassed));
+                });
+            }
+        }
     }
 
     private void removeCurrentGame(){
         // Update information section
-        // Don't need to set bombAmount to 0 since user can't see this number and will be set to correct
-        // value once the user clicks on something
         bombsLeftDisplay.setText("0");
+        secondsPassed = 0;
+        timeDisplay.setText(String.valueOf(secondsPassed));
+        userBegan = false;
+        isPregame = true;
+        gameEnded = true;
 
         // Removes previous game and adds a new one
         mainHolder.getChildren().remove(gameBoardHolder);
@@ -399,6 +430,7 @@ public class Main extends Application {
         private void startGame(){
             startingTile = this;
             isPregame = false;
+            userBegan = true;
             setBombs();
 
             bombAmount = difficulty.getBombsAmount();
