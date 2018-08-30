@@ -1,5 +1,5 @@
 # Minesweeper
-Minesweeper created in JavaFX with Java 8. All the enums and classes are in the same class to make it easier to compile and run.
+Minesweeper created in JavaFX with Java 8.
 
 # How to run
 1. Download the repository.
