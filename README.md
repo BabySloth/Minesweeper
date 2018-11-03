@@ -1,5 +1,5 @@
 # Minesweeper
-Minesweeper created in JavaFX with Java 8.
+Minesweeper created with Open JavaFX with Java 11.
 
 # How to run  
 1. Download the repository.  
